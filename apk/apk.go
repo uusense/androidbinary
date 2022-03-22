@@ -72,6 +72,22 @@ func (k *Apk) Close() error {
 	return k.f.Close()
 }
 
+// Icon returns the icon byte of the APK.
+func (k *Apk) IconBytes(resConfig *androidbinary.ResTableConfig) (imgData []byte, path string, err error) {
+	path, err = k.manifest.App.Icon.WithResTableConfig(resConfig).String()
+	if err != nil {
+		return nil, path, err
+	}
+	if androidbinary.IsResID(path) {
+		return nil, path, newError("unable to convert icon-id to icon path")
+	}
+	imgData, err = k.readZipFile(path)
+	if err != nil {
+		return
+	}
+	return
+}
+
 // Icon returns the icon image of the APK.
 func (k *Apk) Icon(resConfig *androidbinary.ResTableConfig) (image.Image, error) {
 	iconPath, err := k.manifest.App.Icon.WithResTableConfig(resConfig).String()
